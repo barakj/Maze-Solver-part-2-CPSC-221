@@ -24,28 +24,30 @@ const int LinearHashDict::notprimes[] = {100, 300, 1000, 3000, 10000,
                                          100000000, 300000000, 1000000000, -1};
 // List of bad sizes for the hash table and this hash function...
 
+/**
+ * Constructor: initialize member variables and do any other initialization needed (if any)
+ */
 LinearHashDict::LinearHashDict() {
     size_index = 0;
     size = primes[size_index];
-    //size = notprimes[size_index];
     table = new bucket[size](); // Parentheses force initialization to 0
     number = 0;
 
     // Initialize the array of counters for probe statistics
     probes_stats = new int[MAX_STATS]();
 }
-
+/**
+* Deconstructor - delete all table entries
+*/
 LinearHashDict::~LinearHashDict() {
     // Delete all table entries...
     for (int i = 0; i < size; i++) {
         if (table[i].key != NULL) {
             delete table[i].key;
-            // Don't delete data here, to avoid double deletions.
         }
     }
     // Delete the table itself
     delete[] table;
-
     // It's not good style to put this into a destructor,
     // but it's convenient for this assignment...
     cout << "Probe Statistics for find():\n";
@@ -66,7 +68,11 @@ void LinearHashDict::record_stats(int probes) {
     probes_stats[probes]++;
 }
 
-
+/**
+* Hashes a string to a certain index in the table
+ * @param keyID the string to be hashed
+ * @returns number that corresponds to a table index
+*/
 int LinearHashDict::hash(string keyID) {
     int h = 0;
     for (int i = keyID.length() - 1; i >= 0; i--) {
@@ -82,6 +88,9 @@ int LinearHashDict::hash(string keyID) {
     return h;
 }
 
+/**
+* creates a bigger table, and rehashes all elements of old table to the new one
+*/
 void LinearHashDict::rehash() {
 // 221 Students:  DO NOT CHANGE OR DELETE THE NEXT FEW LINES!!!
 // And leave this at the beginning of the rehash() function.
@@ -91,18 +100,19 @@ void LinearHashDict::rehash() {
     std::cout << "*** REHASHING " << size;
 #endif
 // End of "DO NOT CHANGE" Block
-
-
     // TODO:  Your code goes here...
     int oldSize = size;
+    //go to the next prime in the prime numbers array
     size_index++;
+    // Get a bigger table
     size = primes[size_index];
+    // Keep a pointer to the old table.
     bucket *oldTable = table;
     table = new bucket[size]();
-
-
+    // Rehash all the data over
     for (int i = 0; i < oldSize; i++) {
         if (oldTable[i].key != NULL) {
+            //rehashes
             add(oldTable[i].key, oldTable[i].data);
             number--;
         }
@@ -110,14 +120,6 @@ void LinearHashDict::rehash() {
 
 
     delete[] oldTable;
-
-    // Keep a pointer to the old table.
-
-    // Get a bigger table
-
-    // Rehash all the data over
-
-    // No need to delete the data, as all copied into new table.
 
 
 // 221 Students:  DO NOT CHANGE OR DELETE THE NEXT FEW LINES!!!
@@ -130,11 +132,18 @@ void LinearHashDict::rehash() {
 // End of "DO NOT CHANGE" Block
 }
 
+/**
+* Find a specific key in the table
+ * @param key, a poiinter to the element needed to be found
+ * @param pred the data of the found element
+ * @returns true if key was found in table, false if not
+*/
 bool LinearHashDict::find(MazeState *key, MazeState *&pred) {
-    // Returns true iff the key is found.
+    // Returns true if the key is found.
     // Returns the associated value in pred
 
     // TODO:  Your code goes here...
+    //probes stands for how many tries until key is found
     int probes = 1;
     string id = key->getUniqId();
     int hashIndex = hash(id);
@@ -144,9 +153,11 @@ bool LinearHashDict::find(MazeState *key, MazeState *&pred) {
             record_stats(probes);
             return true;
         }
+        //linear probing
         hashIndex++;
         hashIndex %= size;
         probes++;
+        //if skimmed through the whole table
         if (probes > size) {
             break;
         }
@@ -156,6 +167,11 @@ bool LinearHashDict::find(MazeState *key, MazeState *&pred) {
 }
 
 // You may assume that no duplicate MazeState is ever added.
+/**
+* Adds a new element to the table
+ * @param key a pointer to the key of the element to be added
+ * @param pred a pointer to the data of the element to be added
+*/
 void LinearHashDict::add(MazeState *key, MazeState *pred) {
     int probes = 1;
     bool isValid = true;
@@ -166,15 +182,18 @@ void LinearHashDict::add(MazeState *key, MazeState *pred) {
     string id = key->getUniqId();
     int hashIndex = hash(id);
     while (table[hashIndex].key != NULL) {
+        //linear probing
         hashIndex++;
         hashIndex %= size;
         probes++;
+        //skimmed through the table - error (not free spot)
         if (probes > size) {
             isValid = false;
             break;
         }
     }
 
+    //if there is a free spot, insert it there
     if (isValid) {
         table[hashIndex].key = key;
         table[hashIndex].data = pred;

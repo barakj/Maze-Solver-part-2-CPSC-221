@@ -22,11 +22,19 @@ HeapPriorityQueue::~HeapPriorityQueue() {
     // no clean-up to do, since the heap is not dynamically allocated
 }
 
+/**
+ * Adds an element to the vector heap
+ * @param elem a pointer to the MazeState element to be added to the heap priority queue.
+ */
 void HeapPriorityQueue::add(MazeState *elem) {
     heap.push_back(elem);
     std::push_heap(heap.begin(), heap.end(), compareBadness);
 }
 
+/**
+ * Removes the minimum element in the heap - the root, but still keeping heap property (swapping down)
+ * @returns the removed element
+ */
 MazeState *HeapPriorityQueue::remove() {
     assert(!is_empty());
 
@@ -38,7 +46,10 @@ MazeState *HeapPriorityQueue::remove() {
     return result;
 }
 
-
+/**
+ * Checks whether the heap priority queue is empty or not
+ * @returns true if empty and false if not
+ */
 bool HeapPriorityQueue::is_empty() {
     return (heap.size() == 0);
 }

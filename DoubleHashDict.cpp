@@ -24,17 +24,21 @@ const int DoubleHashDict::notprimes[] = {100, 300, 1000, 3000, 10000,
 // List of bad sizes for the hash table and this hash function...
 
 
+/**
+ * Constructor: initialize member variables and do any other initialization needed (if any)
+ */
 DoubleHashDict::DoubleHashDict() {
     size_index = 0;
     size = primes[size_index];
-    //size = notprimes[size_index];
     table = new bucket[size](); // Parentheses force initialization to 0
     number = 0;
-
     // Initialize the array of counters for probe statistics
     probes_stats = new int[MAX_STATS]();
 }
 
+/**
+* Deconstructor - delete all table entries
+*/
 DoubleHashDict::~DoubleHashDict() {
     // Delete all table entries...
     for (int i = 0; i < size; i++) {
@@ -45,7 +49,6 @@ DoubleHashDict::~DoubleHashDict() {
     }
     // Delete the table itself
     delete[] table;
-
     // It's not good style to put this into a destructor,
     // but it's convenient for this assignment...
     cout << "Probe Statistics for find():\n";
@@ -66,7 +69,11 @@ void DoubleHashDict::record_stats(int probes) {
     probes_stats[probes]++;
 }
 
-
+/**
+* 1st hash function: Hashes a string to a certain index in the table
+ * @param keyID the string to be hashed
+ * @returns number that corresponds to a table index
+*/
 int DoubleHashDict::hash1(string keyID) {
     int h = 0;
     for (int i = keyID.length() - 1; i >= 0; i--) {
@@ -82,6 +89,11 @@ int DoubleHashDict::hash1(string keyID) {
     return h;
 }
 
+/**
+* 2nd hash function: Hashes a string to a certain index in the table
+ * @param keyID the string to be hashed
+ * @returns number that corresponds to a table index
+*/
 int DoubleHashDict::hash2(string keyID) {
     int h = 0;
     for (int i = keyID.length() - 1; i >= 0; i--) {
@@ -100,6 +112,11 @@ int DoubleHashDict::hash2(string keyID) {
     return h;
 }
 
+/**
+* 3rd hash function: Hashes a string to a certain index in the table
+ * @param keyID the string to be hashed
+ * @returns number that corresponds to a table index
+*/
 int DoubleHashDict::hash3(string keyID) {
     int h = 0;
     for (int i = keyID.length() - 1; i >= 0; i--) {
@@ -120,6 +137,9 @@ int DoubleHashDict::hash3(string keyID) {
     return h;
 }
 
+/**
+* creates a bigger table, and rehashes all elements of old table to the new one
+*/
 void DoubleHashDict::rehash() {
 // 221 Students:  DO NOT CHANGE OR DELETE THE NEXT FEW LINES!!!
 // And leave this at the beginning of the rehash() function.
@@ -129,8 +149,6 @@ void DoubleHashDict::rehash() {
     std::cout << "*** REHASHING " << size;
 #endif
 // End of "DO NOT CHANGE" Block
-
-
     // TODO:  Your code goes here...
 
     int oldSize = size;
@@ -140,13 +158,16 @@ void DoubleHashDict::rehash() {
     table = new bucket[size]();
 
     for (int i = 0; i < oldSize; i++) {
+        //dont rehash non existent items
         if (oldTable[i].key == NULL)
             continue;
         else {
+            //rehashing
             string id = oldTable[i].key->getUniqId();
             int hashIndex = hash1(id);
             int hashIndex2 = hash2(id);
             while (table[hashIndex].key != NULL) {
+                //double hashing
                 hashIndex = hashIndex + hashIndex2;
                 hashIndex %= size;
             }
@@ -174,10 +195,13 @@ void DoubleHashDict::rehash() {
 // End of "DO NOT CHANGE" Block
 }
 
+/**
+* Find a specific key in the table
+ * @param key, a pointer to the element needed to be found
+ * @param pred the data of the found element
+ * @returns true if key was found in table (and pred, the valur corresponding to it), false if not
+*/
 bool DoubleHashDict::find(MazeState *key, MazeState *&pred) {
-    // Returns true iff the key is found.
-    // Returns the associated value in pred
-
     // TODO:  Your code goes here...
     int probes = 1;
     string id = key->getUniqId();
@@ -203,6 +227,11 @@ bool DoubleHashDict::find(MazeState *key, MazeState *&pred) {
 }
 
 // You may assume that no duplicate MazeState is ever added.
+/**
+* Adds a new element to the table
+ * @param key a pointer to the key of the element to be added
+ * @param pred a pointer to the data of the element to be added
+*/
 void DoubleHashDict::add(MazeState *key, MazeState *pred) {
 
     // Rehash if adding one more element pushes load factor over 3/4
@@ -221,17 +250,15 @@ void DoubleHashDict::add(MazeState *key, MazeState *pred) {
         probes++;
         //tried the whole array, should abort
         if (probes > size) {
-            isValid = false;
-            break;
+            return;
         }
     }
-    if (isValid) {
+        //if we're here, table[hashIndex] is null
         table[hashIndex].key = key;
         table[hashIndex].data = pred;
         number++;
-    }
 
-    // TODO:  Your code goes here...
+
 
 }
 

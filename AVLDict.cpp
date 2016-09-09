@@ -18,6 +18,9 @@ AVLDict::AVLDict() {
     depth_stats = new int[MAX_STATS]();
 }
 
+/**
+* Deletes every node in the tree recursivelu
+*/
 void AVLDict::destructor_helper(node *x) {
     if (x == NULL) return; // Nothing to destroy.
     destructor_helper(x->left);
@@ -26,6 +29,9 @@ void AVLDict::destructor_helper(node *x) {
     delete x;
 }
 
+/**
+* Deconstructor
+*/
 AVLDict::~AVLDict() {
     // Clean up the tree.
     // This is most easily done recursively.
@@ -55,68 +61,62 @@ void AVLDict::record_stats(int depth) {
     depth_stats[depth]++;
 }
 
-
-/*
-bool AVLDict::find(MazeState *key, MazeState *&pred) {
-  // TODO:  Write this function!
-  
-  node* temp = root;
-  if(root == NULL){
-    record_stats(count);
-    return false;
-  }
-  
-  count++;
-
-  if(key->getUniqId() > temp->key->getUniqId()){
-    temp = temp->right;
-  }
-  else if(key->getUniqId() < temp->key->getUniqId()){
-    temp = temp->left;
-  }
-  else{
-    record_stats(count);
-    pred = temp->data;
-    return true;
-  }
-  find(key, pred);
-  return false;
-
-}
+/**
+* Find a specific key in the tree
+ * @param key, a pointer to the element needed to be found
+ * @param pred the data of the found element
+ * @returns true if key was found in tree (and pred, the value corresponding to it), false if not
 */
-
-
-
 bool AVLDict::find(MazeState *key, MazeState *&pred) {
 
     return find_helper(key, pred, root, 0);
-
 }
 
+/**
+* Helper method to find a key in the tree
+ * @param key, a poiinter to the element needed to be found
+ * @param pred the data of the found element
+ * @param temp the node to check values against
+ * @param depth the depth of the node temp
+ * @returns true if key was found in tree (and pred, the valur corresponding to it), false if not
+*/
 bool AVLDict::find_helper(MazeState *key, MazeState *&pred, node *temp, int depth) {
     if (temp == NULL) {
         record_stats(depth);
         return false;
     }
 
+    //bst, so compare to the given node's key
+    //if the key is less than the current node's key - go left
     if (key->getUniqId() < temp->key->getUniqId()) {
         depth++;
         return find_helper(key, pred, temp->left, depth);
-    } else if (key->getUniqId() > temp->key->getUniqId()) {
+    }
+    //if the key is greater than the current node's key - go right
+    else if (key->getUniqId() > temp->key->getUniqId()) {
         depth++;
         return find_helper(key, pred, temp->right, depth);
-    } else {
+    }
+    //else, they are equal - found it!
+    else {
+        //save the nodes value
         pred = temp->data;
         record_stats(depth + 1);
         return true;
     }
 }
 
+/**
+* updates the height of a tree
+ * @param x, the node to update its height
+ * @returns true if height was updated, false if not
+*/
 bool AVLDict::update_height(node *x) {
     // TODO:  Write this function!
     if (x == NULL)
         return false;
     int childHeight = std::max(height(x->right), height(x->left)) + 1;
+    // if the height of x is not the same as the height of the children + 1, update it
     if (height(x) != childHeight) {
         x->height = childHeight;
         return true;
@@ -126,6 +126,10 @@ bool AVLDict::update_height(node *x) {
 
 }
 
+/**
+* rotates the subtree rooted at x to the left (RR case)
+ * @param a, the root of the subtree
+*/
 void AVLDict::rotate_left(node *&a) {
     // "rotates" the subtree rooted at a to the left (counter-clockwise)
 
@@ -136,17 +140,21 @@ void AVLDict::rotate_left(node *&a) {
     std::cout << "Rotate Left: " << a->getUniqId() << std::endl;
 #endif
 // End of "DO NOT CHANGE" Block
-
+// TODO:  Write this function!
     node *temp = a->right;
     a->right = temp->left;
     temp->left = a;
     update_height(a);
     update_height(temp);
     a = temp;
-    // TODO:  Write this function!
+
 
 }
 
+/**
+* rotates the subtree rooted at x to the right (LL case)
+ * @param  b, the root of the subtree
+*/
 void AVLDict::rotate_right(node *&b) {
     // "rotates" the subtree rooted at b to the right (clockwise)
 
@@ -168,14 +176,19 @@ void AVLDict::rotate_right(node *&b) {
     b = temp;
 }
 
+/**
+* Balances the tree
+ * @param a, the root of the subtree
+*/
 void AVLDict::balance(node *&x) {
     int heightRight = height(x->right);
     int heightLeft = height(x->left);
     int maxHeight = std::max(heightRight, heightLeft);
     int minHeight = std::min(heightRight, heightLeft);
-    //if not balanced
+    //if not balanced (difference is more than 1)
     if ((maxHeight - minHeight) > 1) {
         if (heightLeft > heightRight) {
+            //LL case
             if (height(x->left->left) > height(x->left->right))
                 rotate_right(x);
             else {
@@ -184,6 +197,7 @@ void AVLDict::balance(node *&x) {
                 rotate_right(x);
             }
         } else {
+            //RR case
             if (height(x->right->left) < height(x->right->right))
                 rotate_left(x);
             else {
@@ -195,14 +209,20 @@ void AVLDict::balance(node *&x) {
     }
 }
 
-
+/**
+* Inserts a new node into the AVL tree
+ * @param temp, the node to be inserted
+ * @param parent, the parent of the node to be inserted
+*/
 void AVLDict::insert(node *temp, node *&parent) {
     if (parent == NULL) {
         parent = temp;
         return;
     }
+    //go left if less
     if (temp->key->getUniqId() < parent->key->getUniqId())
         insert(temp, parent->left);
+    //go right if more
     else if (temp->key->getUniqId() > parent->key->getUniqId())
         insert(temp, parent->right);
     if (update_height(parent))
@@ -210,6 +230,11 @@ void AVLDict::insert(node *temp, node *&parent) {
 }
 
 // You may assume that no duplicate MazeState is ever added.
+/**
+* addds/creates a new node in the tree
+ * @param key, the key of the element to be added to the tree
+ * @param pred, the data of the element to be added
+*/
 void AVLDict::add(MazeState *key, MazeState *pred) {
 
     // TODO:  Write this function!

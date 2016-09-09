@@ -170,14 +170,14 @@ int main ()
 
 
   //ArrayStack activeStates;
-  LinkedListStack activeStates;
+  //LinkedListStack activeStates;
   //UnsortedPriorityQueue activeStates;
-  //HeapPriorityQueue activeStates;
+  HeapPriorityQueue activeStates;
 
   // 221 STUDENTS:  Uncomment one of these to select which dictionary to use.
   //LinkedListDict seenStates;
-// AVLDict seenStates;
-  LinearHashDict seenStates;
+AVLDict seenStates;
+  //LinearHashDict seenStates;
   //DoubleHashDict seenStates;
 
   solveMaze(startState, activeStates, seenStates);
